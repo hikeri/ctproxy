@@ -1,0 +1,37 @@
+#cache:
+#  key: "cache"
+#  paths:
+#  - dir
+
+stages:
+  - deploy
+
+Deploy:
+  #image: ubuntu:22.04
+  image: golang:latest
+  stage: deploy
+  tags:
+    - docker
+  variables:
+    stk: ${CI_PROJECT_NAME}
+  script:
+    - apt update
+    # && apt upgrade -y
+    - apt install -y openssh-client zstd tar golang bind9-host pkgconf libcurl4-openssl-dev sed coreutils
+    - go build
+    - mkdir -p ~/.ssh; base64 -d "${SSH_KEY}" > ~/.ssh/key; chmod 600 ~/.ssh/key
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\tIdentityFile ~/.ssh/key\n\tUser ci-deploy\n\tPort 55222\n\n" > ~/.ssh/config
+    - |
+      for dephost in $(host -t a ${CLOUD_DEPLOY_HOST} | sed -n '/[.:]/{s@.* @@;p}'); do
+        if [[ -n "${DEBUG_DEPLOY}" ]]; then
+          ssh_q="-v"
+          print_nodename=1
+        else
+          ssh_q="-q"
+        fi
+        [[ -z "${print_nodename}" ]] || echo "=== Starting deploy on ${dephost} ===";
+        tar -Izstd -cf- censortracker-proxy | ssh "${ssh_q}" "${dephost}" deploy-proxy "stk:${stk}"
+        [[ -z "${print_nodename}" ]] || echo "=== Finished deploy on ${dephost} ===";
+      done
+  # only:
+    # - master@devops/censortracker-proxy

@@ -1,0 +1,16 @@
+-- Print will be moved to app's stdout
+print('Lua script loaded')
+
+-- Config is set by changing conf map
+conf = {}
+conf['VALIDATOR'] = '' -- See src/validator.go -> ValidatorsAvailable
+conf['TOR'] = 0 -- Proxy .onion domains via Tor
+conf['PROXY'] = '' -- Use another proxy server as second (proxy-through-proxy)
+
+proxy = {}; -- hosts and target proxies
+proxy['example.com'] = '127.0.0.1:1337'; -- now example.com will be served using this proxy
+
+userPorts = {}; -- users and their allowed ports
+userPorts['test'] = '1234, 2345, 3456'
+
+allowedPorts = "80, 443" -- global allowed ports
