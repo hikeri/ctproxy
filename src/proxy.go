@@ -1,7 +1,7 @@
 package src
 
 import (
-	goproxy "github.com/elazarl/goproxy2"
+	goproxy "github.com/elazarl/goproxy"
 	"log"
 	"net/http"
 	"net/url"
